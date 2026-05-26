@@ -9,6 +9,10 @@
     },
     "routes": [
         {
+            "src": "/metrics",
+            "dest": "/api/main"
+        },
+        {
             "src": "/(.*)",
             "dest": "/api/main"
         }
