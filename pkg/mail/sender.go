@@ -5,7 +5,7 @@ import (
 	"net/smtp"
 	"strconv"
 
-	"github.com/Joaopdiasventura/email/internal/config"
+	"github.com/Joaopdiasventura/email/pkg/config"
 )
 
 type Sender struct {

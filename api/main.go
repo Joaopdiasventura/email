@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Joaopdiasventura/email/internal/config"
-	"github.com/Joaopdiasventura/email/internal/httpx"
-	"github.com/Joaopdiasventura/email/internal/mail"
+	"github.com/Joaopdiasventura/email/pkg/config"
+	"github.com/Joaopdiasventura/email/pkg/httpx"
+	"github.com/Joaopdiasventura/email/pkg/mail"
 )
 
 const contactEmail = "joaopdias.dev@gmail.com"
