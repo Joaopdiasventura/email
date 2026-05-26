@@ -1,6 +1,7 @@
 package mail
 
 import (
+	netmail "net/mail"
 	"strings"
 )
 
@@ -19,5 +20,22 @@ func (r *Request) Normalize() {
 }
 
 func (r Request) Valid() bool {
-	return r.Subject != "" && (r.Text != "" || r.HTML != "")
+	if r.Subject == "" || strings.ContainsAny(r.Subject, "\r\n") {
+		return false
+	}
+
+	if r.Text == "" && r.HTML == "" {
+		return false
+	}
+
+	if r.ReplyTo == "" {
+		return true
+	}
+
+	if strings.ContainsAny(r.ReplyTo, "\r\n") {
+		return false
+	}
+
+	_, err := netmail.ParseAddress(r.ReplyTo)
+	return err == nil
 }

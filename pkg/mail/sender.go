@@ -19,7 +19,17 @@ func NewSender(cfg config.SMTPConfig) Sender {
 }
 
 func (s Sender) Send(to string, req Request) error {
-	message := BuildMessage(Message{
+	fromAddress, err := envelopeAddress(s.Config.From)
+	if err != nil {
+		return err
+	}
+
+	toAddress, err := envelopeAddress(to)
+	if err != nil {
+		return err
+	}
+
+	message, err := BuildMessage(Message{
 		From:    s.Config.From,
 		To:      to,
 		Subject: req.Subject,
@@ -27,18 +37,21 @@ func (s Sender) Send(to string, req Request) error {
 		HTML:    req.HTML,
 		ReplyTo: req.ReplyTo,
 	})
+	if err != nil {
+		return err
+	}
 
 	address := s.Config.Host + ":" + strconv.Itoa(s.Config.Port)
 	auth := smtp.PlainAuth("", s.Config.User, s.Config.Pass, s.Config.Host)
 
 	if s.Config.Secure {
-		return s.sendSecure(address, auth, s.Config.From, to, message)
+		return s.sendSecure(address, auth, fromAddress, []string{toAddress}, message)
 	}
 
-	return smtp.SendMail(address, auth, s.Config.From, []string{to}, message)
+	return smtp.SendMail(address, auth, fromAddress, []string{toAddress}, message)
 }
 
-func (s Sender) sendSecure(address string, auth smtp.Auth, from string, to string, message []byte) error {
+func (s Sender) sendSecure(address string, auth smtp.Auth, from string, to []string, message []byte) error {
 	conn, err := tls.Dial("tcp", address, &tls.Config{
 		ServerName: s.Config.Host,
 	})
@@ -61,8 +74,10 @@ func (s Sender) sendSecure(address string, auth smtp.Auth, from string, to strin
 		return err
 	}
 
-	if err := client.Rcpt(to); err != nil {
-		return err
+	for _, recipient := range to {
+		if err := client.Rcpt(recipient); err != nil {
+			return err
+		}
 	}
 
 	writer, err := client.Data()
